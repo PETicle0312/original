@@ -4,11 +4,17 @@ services:
   mysql:
     image: mysql:8.0
     container_name: peticle-mysql
+    restart: always  # 컨테이너가 꺼지면 자동으로 다시 시작
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: peticledb
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+      TZ: Asia/Seoul  # 시간대를 한국으로 설정
+    command: # 한글 설정 및 인증 플러그인
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
     ports:
       - "${MYSQL_PORT:-3306}:3306"
     volumes:
@@ -21,3 +27,4 @@ volumes:
 
 networks:
   peticle-network:
+    driver: bridge
