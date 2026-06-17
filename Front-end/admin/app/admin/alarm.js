@@ -4,13 +4,11 @@ import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 아이콘 import
 const petIcon = require('../../assets/images/pet_icon.png');
 const arrowLeft = require('../../assets/images/arrow_left.png');
 
-const BASE_URL = "http://172.18.38.26:8080"; // 
+const BASE_URL = "http://172.18.38.26:8080";
 
-// 시간 포맷 함수
 const formatDate = (dateString) => {
   const date = new Date(dateString);
 
@@ -23,7 +21,7 @@ const formatDate = (dateString) => {
   const ampm = hours >= 12 ? "PM" : "AM";
 
   hours = hours % 12;
-  hours = hours ? hours : 12; // 0시는 12로 표시
+  hours = hours ? hours : 12;
 
   return `${year}-${month}-${day} ${hours}:${minutes}${ampm}`;
 };
@@ -38,16 +36,13 @@ export default function AlarmScreen() {
       try {
         const adminId = await AsyncStorage.getItem("adminId");
         if (!adminId) {
-          console.warn("⚠️ 관리자 ID 없음 (로그인 필요)");
+          console.warn("관리자 ID 없음 (로그인 필요)");
           return;
         }
-
-        console.log("🟢 요청 URL:", `${BASE_URL}/api/admin/notifications?adminId=${adminId}`);
 
         const res = await axios.get(`${BASE_URL}/api/admin/notifications?adminId=${adminId}`);
         const alarms = res.data;
 
-        // 날짜 기준 분류
         const now = new Date();
         const today = alarms.filter(a => {
           const created = new Date(a.logTime);
@@ -72,11 +67,7 @@ export default function AlarmScreen() {
     router.back();
   };
 
-  // 알림 카드 컴포넌트
   const renderAlarm = (alarm) => {
-    console.log("🟢 alarm.schoolName:", alarm.schoolName);
-    console.log("🟢 alarm.actionType:", alarm.actionType);
-
     return (
       <View style={styles.alarmCard} key={alarm.logId}>
         <Image source={petIcon} style={styles.alarmIcon} />
@@ -105,7 +96,7 @@ export default function AlarmScreen() {
           <Image source={arrowLeft} style={styles.arrowIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>알림</Text>
-        <View style={{ width: 40 }} /> {/* 오른쪽 여백용 */}
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>

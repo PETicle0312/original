@@ -8,9 +8,8 @@ import {
   Image,
   Alert,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // ✅ 추가
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 아이콘 import (경로를 실제 폴더 구조에 맞게 조정하세요!)
 const userIcon = require("../../assets/images/user_icon.png");
 const keyIcon = require("../../assets/images/key_icon.png");
 const arrowLeft = require("../../assets/images/arrow_left.png");
@@ -18,32 +17,21 @@ const arrowLeft = require("../../assets/images/arrow_left.png");
 export default function AdminPrivacyScreen() {
   const router = useRouter();
 
-  const onBack = () => {
-    router.back();
-  };
-  const onPwd = () => {
-    router.push("/admin/pw_change");
-  };
-  const onPhone = () => {
-    router.push("/admin/admin_phonenumber");
-  };
+  const onBack = () => router.back();
+  const onPwd = () => router.push("/admin/pw_change");
+  const onPhone = () => router.push("/admin/admin_phonenumber");
 
-  // ✅ 로그아웃 핸들러 추가
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("adminId"); // 저장된 관리자 ID 제거
-      // 필요하면 전체 초기화: await AsyncStorage.clear();
-      console.log("✅ 로그아웃: adminId 삭제됨");
-      router.replace("/admin/admin_login"); // 로그인 화면으로 이동
+      await AsyncStorage.removeItem("adminId");
+      router.replace("/admin/admin_login");
     } catch (e) {
-      console.log("❌ 로그아웃 에러:", e);
       Alert.alert("오류", "로그아웃 중 문제가 발생했습니다.");
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* 상단 네비게이션 바 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={{ width: 40, alignItems: "flex-start" }}
@@ -52,10 +40,9 @@ export default function AdminPrivacyScreen() {
           <Image source={arrowLeft} style={styles.arrowIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>관리자 페이지</Text>
-        <View style={{ width: 40 }} /> {/* 오른쪽 여백용 */}
+        <View style={{ width: 40 }} />
       </View>
 
-      {/* 관리자 정보 박스 */}
       <View style={styles.infoBox}>
         <View style={[styles.infoRow, { marginBottom: 15 }]}>
           <Text style={styles.infoLabel}>관리자 번호</Text>
@@ -67,15 +54,10 @@ export default function AdminPrivacyScreen() {
         </View>
       </View>
 
-      {/* 메뉴 리스트 */}
       <View style={styles.menuBox}>
-        {/* 비밀번호 변경 */}
         <TouchableOpacity
           onPress={onPwd}
-          style={[
-            styles.menuRow,
-            { borderBottomWidth: 1, borderBottomColor: "#F1F1F1" },
-          ]}
+          style={[styles.menuRow, { borderBottomWidth: 1, borderBottomColor: "#F1F1F1" }]}
         >
           <Image source={keyIcon} style={styles.menuIcon} />
           <Text style={styles.menuText}>비밀번호 변경</Text>
@@ -84,7 +66,6 @@ export default function AdminPrivacyScreen() {
             style={[styles.menuArrow, { transform: [{ rotate: "180deg" }] }]}
           />
         </TouchableOpacity>
-        {/* 관리자 계정정보 변경 */}
         <TouchableOpacity onPress={onPhone} style={styles.menuRow}>
           <Image source={userIcon} style={styles.menuIcon} />
           <Text style={styles.menuText}>관리자 계정정보 변경</Text>
@@ -95,7 +76,6 @@ export default function AdminPrivacyScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* 로그아웃 버튼 */}
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>로그아웃</Text>
       </TouchableOpacity>
@@ -103,7 +83,6 @@ export default function AdminPrivacyScreen() {
   );
 }
 
-// === 스타일 ===
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -132,7 +111,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     flex: 1,
   },
-
   infoBox: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -161,7 +139,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
   },
-
   menuBox: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -196,7 +173,6 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     tintColor: "#bbb",
   },
-
   logoutBtn: {
     backgroundColor: "#fff",
     borderRadius: 8,

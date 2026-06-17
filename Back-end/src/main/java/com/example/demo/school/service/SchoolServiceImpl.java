@@ -46,14 +46,12 @@ public class SchoolServiceImpl implements SchoolService {
                             "&pIndex=" + page +
                             "&pSize=100";
 
-            // 지역 처리
             if (region != null && !region.isEmpty()) {
                 apiUrl += "&LCTN_SC_NM=" + region;
             } else {
                 apiUrl += "&LCTN_SC_NM=서울특별시";
             }
 
-            // 키워드가 있을 경우만 추가
             if (keyword != null && !keyword.isEmpty()) {
                 apiUrl += "&SCHUL_NM=" + keyword;
             }
@@ -79,7 +77,6 @@ public class SchoolServiceImpl implements SchoolService {
                     String name = school.getString("SCHUL_NM");
                     String address = school.optString("ORG_RDNMA", "");
 
-                    // Optional 없이 중복 확인
                     SchoolEntity entity = schoolRepository.findBySchoolName(name).orElse(null);
 
                     if (entity == null) {
@@ -87,9 +84,6 @@ public class SchoolServiceImpl implements SchoolService {
                         entity.setSchoolName(name);
                         entity.setAddress(address);
                         schoolRepository.save(entity);
-                        System.out.println("✅ 새로 저장됨: " + name);
-                    } else {
-                        System.out.println("⚠️ 이미 존재함: " + name);
                     }
 
                     result.add(new SchoolSearchResponseDto(entity.getId(), name, address));

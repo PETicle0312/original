@@ -1,7 +1,5 @@
 package com.example.demo.game.service;
 
-import com.example.demo.device.dto.PetInputLogDto;
-import com.example.demo.device.service.PetInputLogService;
 import com.example.demo.game.dto.GameResultRequestDto;
 import com.example.demo.game.dto.GameResultResponseDto;
 import com.example.demo.game.entity.GameSession;
@@ -11,8 +9,6 @@ import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +37,18 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
+    @Transactional
     public GameResultResponseDto processGameResult(GameResultRequestDto dto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'processGameResult'");
+        recordGame(dto.getUserId(), dto.getScore(), dto.getPlayTime());
+
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
+
+        return new GameResultResponseDto(
+                "게임 결과 저장 완료",
+                dto.getScore(),
+                user.getTotalLives(),
+                user.getScore()
+        );
     }
 }

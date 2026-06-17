@@ -17,11 +17,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   View,
-  Picker,
-  Button,
 } from "react-native";
-
-/*개인포트 변경 5개*/
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -39,14 +35,13 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [schoolResults, setSchoolResults] = useState([]);
-  const [schoolId, setSchoolId] = useState(null); // schoolId 저장
+  const [schoolId, setSchoolId] = useState(null);
 
   const [keyword, setKeyword] = useState("");
-  const [region, setRegion] = useState("서울특별시"); // 기본 지역 설정
+  const [region, setRegion] = useState("서울특별시");
 
-  const BASE_URL = "http://192.168.219.111:8080"; // 공통으로 빼두기
+  const BASE_URL = "http://192.168.219.111:8080";
 
-  // 학교 검색 API 호출
   const fetchSchools = async (keyword, region) => {
     try {
       const response = await axios.get(
@@ -54,23 +49,20 @@ export default function RegisterScreen() {
         {
           params: {
             keyword: keyword,
-            region: region, // ← 지역 파라미터 추가
+            region: region,
           },
         }
       );
-      console.log("📦 학교 API 응답:", response.data); // ✅ 응답 로그
       setSchoolResults(response.data);
     } catch (error) {
       console.error("❌ 학교 검색 실패:", error);
     }
   };
 
-  // 학번 인증 API 호출
   const verifyStudent = async () => {
-    console.log("인증 요청 →", { studentNumber });
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/school/verify` /*개인포트변경*/,
+        `${BASE_URL}/api/school/verify`,
         { studentNumber }
       );
       Alert.alert("인증 성공", response.data);
@@ -80,12 +72,10 @@ export default function RegisterScreen() {
     }
   };
 
-  // 휴대폰 형식 인증
   const verifyPhoneNumber = async () => {
-    console.log(phone);
     try {
       const response = await axios.post(
-        `${BASE_URL}/users/verify-phone` /*개인포트변경*/,
+        `${BASE_URL}/users/verify-phone`,
         { phoneNumber: phone }
       );
       Alert.alert("인증 성공", response.data);
@@ -95,7 +85,6 @@ export default function RegisterScreen() {
     }
   };
 
-  // 학교 검색이 있을 때마다 API 호출
   useEffect(() => {
     if (schoolSearch.trim().length > 0) {
       fetchSchools(schoolSearch.trim());
@@ -104,7 +93,6 @@ export default function RegisterScreen() {
     }
   }, [schoolSearch, region]);
 
-  // 아이디 중복 확인 함수
   const checkIdDuplicate = async () => {
     const idPattern = /^[a-zA-Z0-9]{6,12}$/;
     if (!idPattern.test(userId)) {
@@ -117,13 +105,11 @@ export default function RegisterScreen() {
 
     try {
       const response = await axios.post(
-        `${BASE_URL}/users/check-id` /*개인포트변경*/,
-        // 아이디 중복 확인 API URL
+        `${BASE_URL}/users/check-id`,
         { userId: userId }
       );
 
       if (response.data === "사용 가능한 아이디입니다.") {
-        console.log("✅ 아이디 중복 확인 성공:", response.data);
         Alert.alert("아이디 확인", "사용 가능한 아이디입니다.");
       } else {
         Alert.alert("아이디 중복", "이미 사용 중인 아이디입니다.");
@@ -134,28 +120,19 @@ export default function RegisterScreen() {
     }
   };
 
-  // 회원가입 처리 함수
   const handleRegister = async () => {
-    // 비밀번호 확인
-    console.log("✅ 비밀번호:", password); // 비밀번호 출력
-    console.log("✅ 비밀번호 확인:", confirmPassword); // 비밀번호 확인 출력
-
     if (password !== confirmPassword) {
       Alert.alert("비밀번호 불일치", "비밀번호가 일치하지 않습니다.");
       return;
     }
 
-    // 🔥 schoolId 확인 로그
-    console.log("🔥 최종 등록 schoolId:", schoolId);
-
-    // API 호출
     try {
       const response = await axios.post(
-        `${BASE_URL}/users/register` /*개인포트변경*/,
+        `${BASE_URL}/users/register`,
         {
           userId,
           password,
-          confirmPassword, // ← 이 필드 꼭 들어가야 함!
+          confirmPassword,
           phone,
           name,
           studentNumber,
@@ -164,7 +141,6 @@ export default function RegisterScreen() {
           imageUrl: "",
         }
       );
-      console.log("✅ 회원가입 성공:", response.data);
       Alert.alert("가입 성공", "회원가입이 완료되었습니다!", [
         { text: "확인", onPress: () => router.replace("/user/login") },
       ]);
@@ -184,7 +160,6 @@ export default function RegisterScreen() {
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={styles.title}>회원가입</Text>
 
-            {/* 학교 선택 */}
             <Text style={styles.label}>학교를 선택해 주세요</Text>
             <View style={styles.row}>
               <TextInput
@@ -212,7 +187,6 @@ export default function RegisterScreen() {
               </Pressable>
             </View>
 
-            {/* 학교 검색 모달 */}
             <Modal
               visible={modalVisible}
               animationType="slide"
@@ -246,7 +220,6 @@ export default function RegisterScreen() {
                       <Pressable
                         style={styles.schoolItem}
                         onPress={() => {
-                          console.log("✅ 선택한 학교 item:", item);
                           setSchoolName(item.schoolName);
                           setSchoolId(item.schoolId);
                           setModalVisible(false);
@@ -263,7 +236,6 @@ export default function RegisterScreen() {
               </View>
             </Modal>
 
-            {/* 이름 */}
             <Text style={styles.label}>이름</Text>
             <View style={styles.row}>
               <TextInput
@@ -274,7 +246,6 @@ export default function RegisterScreen() {
               />
             </View>
 
-            {/* 학번 */}
             <Text style={styles.label}>학번을 입력해 주세요</Text>
             <View style={styles.row}>
               <TextInput
@@ -303,7 +274,6 @@ export default function RegisterScreen() {
               </Pressable>
             </View>
 
-            {/* 휴대폰 번호 */}
             <Text style={styles.label}>휴대폰 번호</Text>
             <View style={styles.row}>
               <TextInput
@@ -332,7 +302,6 @@ export default function RegisterScreen() {
               </Pressable>
             </View>
 
-            {/* 아이디 */}
             <Text style={styles.label}>아이디</Text>
             <View style={styles.row}>
               <TextInput
@@ -343,7 +312,7 @@ export default function RegisterScreen() {
               />
 
               <Pressable
-                onPress={checkIdDuplicate} //중복 확인 함수 연결
+                onPress={checkIdDuplicate}
                 style={({ pressed }) => [
                   styles.buttonSmall,
                   pressed && styles.buttonSmallPressed,
@@ -362,7 +331,6 @@ export default function RegisterScreen() {
               </Pressable>
             </View>
 
-            {/* 비밀번호 */}
             <Text style={styles.label}>비밀번호</Text>
             <View style={[styles.row, { position: "relative" }]}>
               <TextInput
@@ -397,7 +365,6 @@ export default function RegisterScreen() {
               6~20자 / 영문, 대문자, 소문자, 숫자, 특수문자 중 2가지 이상 조합
             </Text>
 
-            {/* 가입하기 */}
             <Pressable
               onPress={handleRegister}
               style={({ pressed }) => [

@@ -13,7 +13,6 @@ import com.example.demo.device.entity.DeviceCheckLog;
 import com.example.demo.device.repository.DeviceRepository;
 import com.example.demo.school.entity.SchoolEntity;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,18 +24,15 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final DeviceRepository deviceRepository;
 
-    @Autowired
-    private DeviceRepository deviceRepository;
-
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService, DeviceRepository deviceRepository) {
         this.adminService = adminService;
+        this.deviceRepository = deviceRepository;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AdminLoginRequestDto dto) {
-        System.out.println("🔵 [요청 도착] 로그인 시도: " + dto.getAdminId() + ", " + dto.getPassword());
-
         AdminLoginResponseDto result = adminService.login(dto);
         if (result != null) {
             return ResponseEntity.ok(result);
@@ -102,17 +98,13 @@ public class AdminController {
     // 알림 조회 (DeviceCheckLog → DTO 변환)
     @GetMapping("/notifications")
     public ResponseEntity<List<NotificationResponseDto>> getNotifications(@RequestParam Long adminId) {
-        System.out.println("🔵 /api/admin/notifications 호출됨, adminId=" + adminId);
-
         List<DeviceCheckLog> logs = adminService.getNotifications(adminId);
 
         // DeviceCheckLog → NotificationResponseDto 변환
         List<NotificationResponseDto> response = logs.stream().map(log -> {
-                String schoolName = log.getDeviceId().getSchool() != null 
-                        ? log.getDeviceId().getSchool().getSchoolName() 
-                        : "null";
-
-                System.out.println("📌 DTO 변환 schoolName=" + log.getDeviceId().getSchool().getSchoolName());
+            String schoolName = log.getDeviceId().getSchool() != null
+                    ? log.getDeviceId().getSchool().getSchoolName()
+                    : "알 수 없음";
 
             return new NotificationResponseDto(
                 log.getCheckLogId(),
@@ -120,7 +112,7 @@ public class AdminController {
                 log.getActionType(),
                 log.getLogTime(),
                 log.getDeviceId().getDeviceId(),
-                log.getDeviceId().getSchool().getSchoolName()
+                schoolName
             );
         }).toList();
 

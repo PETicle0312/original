@@ -12,6 +12,7 @@ import com.example.demo.school.entity.SchoolEntity;
 import com.example.demo.school.repository.SchoolRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,13 +25,14 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final SchoolRepository schoolRepository;
     private final DeviceCheckLogRepository deviceCheckLogRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public AdminLoginResponseDto login(AdminLoginRequestDto dto) {
         AdminEntity admin = adminRepository.findByAdminId(dto.getAdminId())
                 .orElse(null);
 
-        if (admin == null || !admin.getAdmPassword().equals(dto.getPassword())) {
+        if (admin == null || !passwordEncoder.matches(dto.getPassword(), admin.getAdmPassword())) {
             return null;
         }
 
@@ -56,11 +58,11 @@ public class AdminServiceImpl implements AdminService {
         AdminEntity admin = adminRepository.findByAdminId(adminId)
                 .orElseThrow(() -> new RuntimeException("❌ 해당 관리자를 찾을 수 없습니다."));
 
-        if (!admin.getAdmPassword().equals(currentPassword)) {
+        if (!passwordEncoder.matches(currentPassword, admin.getAdmPassword())) {
             return false;
         }
 
-        admin.setAdmPassword(newPassword);
+        admin.setAdmPassword(passwordEncoder.encode(newPassword));
         adminRepository.save(admin);
         return true;
     }

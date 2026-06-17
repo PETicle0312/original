@@ -30,11 +30,10 @@ public class OpenApiPointInterceptor implements HandlerInterceptor {
                 } catch (Exception e) {
                     System.err.println("[OpenApiPointInterceptor] 포인트 적립 실패: " + e.getMessage());
                 }
-            } else {
-                System.out.println("[OpenApiPointInterceptor] x-user-id 헤더 없음 → 포인트 적립 안 함");
             }
         }
 
-        return true; // 계속 진행
+        return true;
+
     }
 }

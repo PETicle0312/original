@@ -17,23 +17,16 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AdminDetailScreen() {
-  // ===== 기본 세팅 =====
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const { school, address, deviceId, loadRate } = useLocalSearchParams();
-  
-  console.log("👉 school:", school);
-  console.log("👉 address:", address);
-  console.log("👉 deviceId:", deviceId);
 
-  // ===== 상태값 =====
   const [showNfcPopup, setShowNfcPopup] = useState(false);
   const [checkLogs, setCheckLogs] = useState([]);
-  const [refreshing, setRefreshing] = useState(false); //새로고침
+  const [refreshing, setRefreshing] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [percent, setPercent] = useState(Number(loadRate) || 0);
 
-  // ===== 최근 6개월 =====
   function generateRecentMonthsWithPeriod(count = 6) {
     const monthList = [];
     const monthPeriodMap = {};
@@ -51,10 +44,7 @@ export default function AdminDetailScreen() {
       const endDate = new Date(year, month, 0);
 
       const format = (d) =>
-        `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(
-          2,
-          "0"
-        )}.${String(d.getDate()).padStart(2, "0")}`;
+        `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 
       monthPeriodMap[label] = { start: format(startDate), end: format(endDate) };
     }
@@ -66,14 +56,11 @@ export default function AdminDetailScreen() {
   const [selectedMonth, setSelectedMonth] = useState(monthList[0]);
   const period = monthPeriodMap[selectedMonth] || { start: "", end: "" };
 
-  // ===== 라벨 → YYYY-MM =====
   const toYearMonth = (label) => {
     const [year, month] = label.replace("년", "").replace("월", "").trim().split(" ");
     return `${year}-${month.padStart(2, "0")}`;
   };
 
-  // ===== 데이터 가져오기 =====
-  // ✅ 공용으로 쓸 fetchLogs 함수 (useEffect 밖에 선언!)
   const fetchLogs = async () => {
     try {
       const response = await axios.get(
@@ -102,32 +89,23 @@ export default function AdminDetailScreen() {
     }
   };
 
-  // ===== 새로고침 핸들러 =====
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchLogs();  // ✅ 이제 정상 동작
+    await fetchLogs();
     setRefreshing(false);
   }, [selectedMonth, deviceId]);
 
-  // ===== 화면 들어올 때도 실행 =====
   useEffect(() => {
     fetchLogs();
   }, [selectedMonth, deviceId]);
 
-  // ===== 팝업 날짜 =====
   const schoolName = school;
   const location = address;
   const now = new Date();
-  const date = `${now.getFullYear()}년 ${String(now.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}월 ${String(now.getDate()).padStart(2, "0")}일 ${
+  const date = `${now.getFullYear()}년 ${String(now.getMonth() + 1).padStart(2, "0")}월 ${String(now.getDate()).padStart(2, "0")}일 ${
     now.getHours() < 12 ? "오전" : "오후"
-  } ${String(now.getHours() % 12 || 12).padStart(2, "0")}:${String(
-    now.getMinutes()
-  ).padStart(2, "0")}`;
+  } ${String(now.getHours() % 12 || 12).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
-  // ===== 바텀시트 =====
   const openSheet = () => {
     setShowMonthPicker(true);
     Animated.timing(slideAnim, {
@@ -145,7 +123,6 @@ export default function AdminDetailScreen() {
     }).start(() => setShowMonthPicker(false));
   };
 
-  // ===== 수거율 아이콘 =====
   const getLevelIcon = () => {
     const p = Number(percent);
     if (p === 0) return require("../../../assets/images/levelEmpty_icon.png");
@@ -154,10 +131,8 @@ export default function AdminDetailScreen() {
     return require("../../../assets/images/levelDanger_icon.png");
   };
 
-  // ✅ 기존의 alert() 삭제하고, 새 state 추가
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-  // ✅ 수거 완료 함수 수정
   const handleConfirmCollection = async () => {
     try {
       const adminId = await AsyncStorage.getItem("adminId");
@@ -167,14 +142,13 @@ export default function AdminDetailScreen() {
 
       setPercent(0);
       setShowNfcPopup(false);
-      setShowSuccessPopup(true); // ✅ 새 팝업 띄우기
+      setShowSuccessPopup(true);
     } catch (err) {
       console.error("❌ 수거 완료 실패:", err);
       alert("⚠️ 수거 완료 처리 중 오류가 발생했습니다.");
     }
   };
 
-  // ===== 실시간 퍼센트 갱신 (Polling 방식) =====
   useEffect(() => {
     const fetchPercent = async () => {
       try {
@@ -188,25 +162,19 @@ export default function AdminDetailScreen() {
       }
     };
 
-    // 즉시 1회 실행
     fetchPercent();
 
-    // 5초마다 갱신
     const interval = setInterval(fetchPercent, 5000);
 
-    // 화면 벗어나면 정리
     return () => clearInterval(interval);
   }, [deviceId]);
 
-  // ===== 라우터 =====
   const router = useRouter();
   const onAlarm = () => router.push("/admin/alarm");
   const onBack = () => router.back();
 
-  // ===== 화면 =====
   return (
     <View style={styles.container}>
-      {/* 수거하기 팝업 */}
       <Modal visible={showNfcPopup} transparent animationType="fade">
         <View style={styles.popupBackground}>
           <View style={styles.popupBox}>
@@ -248,7 +216,6 @@ export default function AdminDetailScreen() {
         </View>
       </Modal>
 
-      {/* 상단 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity style={{ width: 40, alignItems: "flex-start" }} onPress={onBack}>
           <Image source={require("../../../assets/images/arrow_left.png")} style={styles.arrowIcon} />
@@ -260,7 +227,6 @@ export default function AdminDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* 학교 + 적재율 */}
       <View style={styles.statusBox}>
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
           <Image source={require("../../../assets/images/school_icon.png")} style={styles.schoolIcon} />
@@ -296,19 +262,17 @@ export default function AdminDetailScreen() {
             </Text>
           </View>
         </View>
-        
+
         <Text style={styles.deviceNum}>페티클 번호: PET-{deviceId}</Text>
 
-        {/* 수거하기 버튼 */}
         <TouchableOpacity
           style={styles.collectBtn}
-          onPress={() => setShowNfcPopup(true)}  // ✅ 팝업만 띄움
+          onPress={() => setShowNfcPopup(true)}
         >
           <Text style={styles.collectBtnText}>수거하기</Text>
         </TouchableOpacity>
       </View>
-      
-      {/* ✅ 수거 완료 커스텀 팝업 */}
+
       <Modal visible={showSuccessPopup} transparent animationType="fade">
         <View style={styles.popupBackground}>
           <View style={styles.popupBox}>
@@ -328,7 +292,6 @@ export default function AdminDetailScreen() {
         </View>
       </Modal>
 
-      {/* 월별 수거내역 */}
       <View style={styles.listBox}>
         <View style={{ alignItems: "center", marginBottom: 8 }}>
           <TouchableOpacity onPress={openSheet} style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
@@ -363,7 +326,6 @@ export default function AdminDetailScreen() {
         </ScrollView>
       </View>
 
-      {/* 바텀시트 */}
       {showMonthPicker && (
         <>
           <Pressable
@@ -422,7 +384,6 @@ export default function AdminDetailScreen() {
   );
 }
 
-// ===== 스타일 =====
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -552,7 +513,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   monthText: { fontSize: 16, color: "#222", paddingLeft: 10 },
-  // 팝업
   popupBackground: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.18)",
@@ -664,14 +624,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 4,
   },
-    successConfirmText: {
-    color: "#F4F4F4",       // 초록색 글씨
+  successConfirmText: {
+    color: "#F4F4F4",
     fontWeight: "bold",
     fontSize: 16,
     letterSpacing: 0.5,
     textAlign: "center",
   },
-    collectBtn: {
+  collectBtn: {
     backgroundColor: "#2DA25A",
     borderRadius: 10,
     paddingVertical: 12,

@@ -13,21 +13,15 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-export const options = { headerShown: false }; // ← 헤더(뒤로가기) 없애기
+
+export const options = { headerShown: false };
+
 export default function LoginScreen() {
   const router = useRouter();
   const [managerId, setManagerId] = useState("");
   const [password, setPassword] = useState("");
-  /**
-  const onLogin = () => {
-    // TODO: 로그인 처리 로직
-    //alert('로그인 시도!!!'); 
-    router.push("/admin/admin_main");
-  };
- */
 
   const onLogin = async () => {
-    console.log("✅ 로그인 버튼 눌림");
     try {
       const response = await axios.post(
         "http://172.18.38.26:8080/api/admin/login",
@@ -37,13 +31,8 @@ export default function LoginScreen() {
         }
       );
 
-      console.log("🔁 서버 응답:", response);
-
       if (response.status === 200) {
-        // ✅ 로그인 성공 시 adminId 저장
-        await AsyncStorage.setItem("adminId", managerId); // managerId는 문자열이므로 그대로 저장해도 OK
-
-        console.log("로그인 응답 데이터:", response.data);
+        await AsyncStorage.setItem("adminId", managerId);
         Alert.alert("로그인 성공", response.data.adminName + " 님 환영합니다!");
         router.replace("/admin/admin_main");
       } else {
@@ -110,7 +99,6 @@ const styles = StyleSheet.create({
     marginTop: -50,
   },
   logoBox: {
-    //marginTop: -50, // 이 값을 더 크게 하면 아래로, 더 작게 하면 위로!
     alignItems: "center",
   },
   logo: {

@@ -18,30 +18,17 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    console.log("📦 로그인 요청 데이터:", { userId, password });
     try {
       const response = await axios.post(
-        "http://192.168.219.111:8080/users/login" /*개인포트변경*/,
-        {
-          userId,
-          password,
-        }
+        "http://192.168.219.111:8080/users/login",
+        { userId, password }
       );
 
       const data = response.data;
 
       if (data.success) {
-        console.log("✅ 로그인 성공:", data);
+        const { userId, characterName, lives, totalRecycleCount, highestScore } = data;
 
-        const {
-          userId,
-          characterName,
-          lives,
-          totalRecycleCount,
-          highestScore,
-        } = data;
-
-        // 로그인 성공 → 게임 메인 페이지로 이동 + 데이터 전달
         router.replace({
           pathname: "/user/gamemain",
           params: {
@@ -55,7 +42,6 @@ export default function LoginScreen() {
 
         Alert.alert("로그인 성공", `환영합니다, ${userId}님!`);
       } else {
-        console.log("❌ 로그인 실패:", data.message);
         Alert.alert("로그인 실패", data.message);
       }
     } catch (error) {
@@ -66,7 +52,6 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* logo_image */}
       <Image
         source={require("../../assets/images/login_logo.png")}
         style={styles.logo}
@@ -89,35 +74,16 @@ export default function LoginScreen() {
           onChangeText={setPassword}
         />
 
-        {/*
-       <Pressable
-          onPress={() => console.log("비밀번호 찾기")}
-          style={({ pressed }) => pressed && { opacity: 0.8 }}
-        >
-          {({ pressed }) => (
-            <Text style={[styles.forgot, pressed && styles.forgotPressed]}>
-              비밀번호를 잊어버리셨나요?
-            </Text>
-          )}
-        </Pressable>
-      */}
-
         <View style={styles.buttonRow}>
           <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={handleLogin}
           >
             <Text style={styles.buttonText}>로그인</Text>
           </Pressable>
 
           <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
             onPress={() => router.push("/user/registration")}
           >
             <Text style={styles.buttonText}>회원가입</Text>
@@ -139,7 +105,6 @@ const styles = StyleSheet.create({
     height: 60,
     marginTop: 100,
   },
-
   inputContainer: {
     width: "80%",
     marginTop: 80,
@@ -160,12 +125,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
   },
-  /*forgot: {
-    fontSize: 12,
-    color: "#777",
-    textAlign: "right",
-   
-  },*/
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",

@@ -16,10 +16,9 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const arrowLeft = require("../../assets/images/arrow_left.png");
-const chevronRight = require("../../assets/images/arrow_left.png"); // 필요시 아이콘 재활용
+const chevronRight = require("../../assets/images/arrow_left.png");
 const BASE_URL = "http://172.18.38.26:8080";
 
-// 서버 없을 때 사용할 기본 지역 172.30.1.66
 const REGION_FALLBACK = [
   "강남구",
   "강동구",
@@ -51,15 +50,14 @@ const REGION_FALLBACK = [
 export default function AdminAccountEditScreen() {
   const [adminId, setAdminId] = useState("");
   const [region, setRegion] = useState("");
-  const [name, setName] = useState(""); // 표시만 (수정 불가)
-  const [phone, setPhone] = useState(""); // 입력, 포맷팅
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [regions, setRegions] = useState(REGION_FALLBACK);
   const [regionModalVisible, setRegionModalVisible] = useState(false);
 
   const router = useRouter();
   const onBack = () => router.back();
 
-  // 휴대폰 포맷 (010-1234-5678)
   const formatPhone = (value) => {
     const digits = value.replace(/\D/g, "");
     if (digits.startsWith("02")) {
@@ -67,17 +65,11 @@ export default function AdminAccountEditScreen() {
       if (digits.length <= 5) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
       if (digits.length <= 9)
         return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`;
-      return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(
-        6,
-        10
-      )}`;
+      return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
     } else {
       if (digits.length <= 3) return digits;
       if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(
-        7,
-        11
-      )}`;
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
     }
   };
 
@@ -91,7 +83,6 @@ export default function AdminAccountEditScreen() {
         setAdminId(res.data.adminId);
         setRegion(res.data.region || "");
         setName(res.data.name || "");
-        // 화면에는 하이픈 포함 포맷으로 보여주기
         setPhone(res.data.phone ? formatPhone(res.data.phone) : "");
       } catch (err) {
         console.error("❌ 관리자 정보 불러오기 실패:", err);
@@ -101,10 +92,10 @@ export default function AdminAccountEditScreen() {
 
     const fetchRegions = async () => {
       try {
-        const r = await axios.get(`${BASE_URL}/api/regions`); // 있으면 사용
+        const r = await axios.get(`${BASE_URL}/api/regions`);
         if (Array.isArray(r.data) && r.data.length > 0) setRegions(r.data);
       } catch (_) {
-        // 엔드포인트 없으면 fallback 유지
+        // fallback 유지
       }
     };
 
@@ -121,8 +112,7 @@ export default function AdminAccountEditScreen() {
         return;
       }
 
-      // 전송 전 정규화
-      const normalizedPhone = phone.replace(/\D/g, ""); // 숫자만
+      const normalizedPhone = phone.replace(/\D/g, "");
       const trimmedRegion = region.trim();
 
       if (!normalizedPhone || normalizedPhone.length < 10) {
@@ -130,21 +120,17 @@ export default function AdminAccountEditScreen() {
         return;
       }
 
-      // 서버가 phone 혹은 phoneNumber를 기대할 수 있어 둘 다 전송(하나는 무시될 수 있음)
       const payload = {
         region: trimmedRegion,
         phone: normalizedPhone,
         phoneNumber: normalizedPhone,
       };
-      const url = `${BASE_URL}/api/admin/${adminId}/info`; // 조회와 동일 패턴로 저장
-      console.log("🔵 요청 URL:", url, "바디:", payload);
+      const url = `${BASE_URL}/api/admin/${adminId}/info`;
 
       const res = await axios.put(url, payload, {
         headers: { "Content-Type": "application/json" },
       });
-      console.log("🟢 수정 성공:", res.data);
 
-      // 메인에서 지역 재조회에 활용
       await AsyncStorage.setItem("adminRegion", trimmedRegion);
 
       Alert.alert("완료", "관리자 정보가 변경되었습니다.");
@@ -170,7 +156,6 @@ export default function AdminAccountEditScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={{ width: 40, alignItems: "flex-start" }}
@@ -182,15 +167,12 @@ export default function AdminAccountEditScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      {/* 내용 */}
       <View style={styles.content}>
-        {/* 관리자 번호 */}
         <View style={[styles.row, { marginTop: 6 }]}>
           <Text style={styles.labelBold}>관리자 번호</Text>
           <Text style={styles.valueGray}>{adminId}</Text>
         </View>
 
-        {/* 담당지역: 선택 모달 */}
         <View style={styles.row}>
           <Text style={styles.labelBold}>관리자 담당지역</Text>
           <Pressable style={styles.selectBox} onPress={openRegionPicker}>
@@ -209,7 +191,6 @@ export default function AdminAccountEditScreen() {
           </Pressable>
         </View>
 
-        {/* 휴대폰 번호 */}
         <View style={styles.formGroup}>
           <Text style={styles.labelBold}>휴대폰 번호</Text>
           <View style={styles.inputRow}>
@@ -233,13 +214,11 @@ export default function AdminAccountEditScreen() {
           <View style={styles.underline} />
         </View>
 
-        {/* 저장 */}
         <TouchableOpacity style={styles.button} onPress={handleSave}>
           <Text style={styles.buttonText}>수정완료</Text>
         </TouchableOpacity>
       </View>
 
-      {/* 지역 선택 모달 */}
       <Modal
         visible={regionModalVisible}
         animationType="slide"

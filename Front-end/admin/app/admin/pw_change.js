@@ -11,10 +11,8 @@ import {
 } from "react-native";
 import axios from "axios";
 
-// 아이콘 경로 맞게 수정!
 const arrowLeft = require("../../assets/images/arrow_left.png");
 
-// ⚡️ PC 로컬 IP (같은 와이파이에서만 접속 가능)
 const BASE_URL = "http://172.18.38.26:8080";
 
 export default function PasswordChangeScreen() {
@@ -23,7 +21,7 @@ export default function PasswordChangeScreen() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const adminId = 1; // 로그인된 관리자 ID (나중에 context나 props에서 가져오면 됨)
+  const adminId = 1;
 
   const onBack = () => {
     router.back();
@@ -49,7 +47,6 @@ export default function PasswordChangeScreen() {
         }
       );
 
-      console.log("✅ 비밀번호 변경 성공:", response.data);
       Alert.alert("성공", "비밀번호가 변경되었습니다.");
       router.back();
     } catch (error) {
@@ -60,7 +57,6 @@ export default function PasswordChangeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={{ width: 40, alignItems: "flex-start" }}
@@ -72,15 +68,12 @@ export default function PasswordChangeScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      {/* 내용 전체 래퍼 */}
       <View style={styles.contentBox}>
-        {/* 관리자 번호 */}
         <View style={{ marginTop: 15 }}>
           <Text style={styles.label}>관리자 번호</Text>
           <Text style={styles.adminNum}>ARHS152DD</Text>
         </View>
 
-        {/* 현재 비밀번호 */}
         <Text style={[styles.label, { marginTop: 30 }]}>현재 비밀번호</Text>
         <TextInput
           style={styles.input}
@@ -89,7 +82,6 @@ export default function PasswordChangeScreen() {
           onChangeText={setCurrentPassword}
         />
 
-        {/* 변경 비밀번호 */}
         <Text style={styles.label}>변경 비밀번호</Text>
         <TextInput
           style={styles.input}
@@ -101,7 +93,6 @@ export default function PasswordChangeScreen() {
           6~20자 / 영문, 대문자, 소문자, 숫자, 특수문자 중 2가지 이상 조합
         </Text>
 
-        {/* 새 비밀번호 확인 */}
         <Text style={styles.label}>새 비밀번호 확인</Text>
         <TextInput
           style={styles.input}
@@ -110,7 +101,6 @@ export default function PasswordChangeScreen() {
           onChangeText={setConfirmPassword}
         />
 
-        {/* 변경 버튼 */}
         <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
           <Text style={styles.buttonText}>비밀번호 변경</Text>
         </TouchableOpacity>

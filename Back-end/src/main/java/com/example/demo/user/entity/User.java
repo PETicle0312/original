@@ -59,25 +59,10 @@ public class User {
     @Column(name = "score", nullable = false)
     private Integer score = 0;
 
-    /**
-     * 엔티티가 처음 저장될 때 실행되는 콜백
-     * - 비밀번호 암호화
-     * - score 기본값 0
-     * - registerDate 기본값 현재 시간
-     */
     @PrePersist
     public void onCreate() {
-        if (this.password != null) {
-            this.password = encryptPassword(this.password);
-        }
         if (score == null) score = 0;
         if (registerDate == null) registerDate = LocalDateTime.now();
-    }
-
-    // 실제 암호화 로직 (예: BCryptPasswordEncoder)
-    private String encryptPassword(String password) {
-        // TODO: BCrypt 같은 암호화 로직 적용 필요
-        return password; // 현재는 그대로 리턴 (팀원 로직 확인 후 수정)
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

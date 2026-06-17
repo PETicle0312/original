@@ -7,7 +7,7 @@ import {
   Text,
   View,
   TouchableOpacity,
-  RefreshControl, // ✅ 추가
+  RefreshControl,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -22,16 +22,13 @@ export const options = {
 export default function AdminMainScreen() {
   const [hasUnreadAlarm, setHasUnreadAlarm] = useState(false);
   const [schoolList, setSchoolList] = useState([]);
-  const [refreshing, setRefreshing] = useState(false); // ✅ 추가
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  // ✅ 재사용 가능한 조회 함수
   const fetchSchools = useCallback(async () => {
     try {
       const adminId = await AsyncStorage.getItem("adminId");
       const adminRegion = await AsyncStorage.getItem("adminRegion");
-      console.log("🟢 로그인된 관리자 ID:", adminId);
-      console.log("🟢 저장된 관리자 지역:", adminRegion);
 
       if (adminRegion) {
         try {
@@ -40,7 +37,6 @@ export default function AdminMainScreen() {
             { params: { region: adminRegion } }
           );
           setSchoolList(data || []);
-          console.log("🏫 지역 기반 학교 리스트:", data);
           return;
         } catch (e) {
           console.warn(
@@ -54,20 +50,17 @@ export default function AdminMainScreen() {
         params: { adminId },
       });
       setSchoolList(data || []);
-      console.log("🏫 adminId 기반 학교 리스트:", data);
     } catch (err) {
       console.error("❌ 학교 리스트 가져오기 실패:", err?.response || err);
     }
   }, []);
 
-  // 화면 포커스될 때마다 갱신
   useFocusEffect(
     useCallback(() => {
       fetchSchools();
     }, [fetchSchools])
   );
 
-  // ✅ 당겨서 새로고침 핸들러
   const onRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
@@ -83,7 +76,6 @@ export default function AdminMainScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 상단 로고/아이콘 영역 */}
       <View style={styles.header}>
         <Image
           source={require("../../assets/images/text_logo.png")}
@@ -159,11 +151,9 @@ export default function AdminMainScreen() {
         </View>
       </View>
 
-      {/* 적재량 현황 리스트 */}
       <ScrollView
         style={styles.statusBox}
         contentContainerStyle={{ paddingBottom: 16 }}
-        // ✅ 당겨서 새로고침 연결
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -187,11 +177,11 @@ export default function AdminMainScreen() {
               onPress={() =>
                 router.push({
                   pathname: "/admin/admin_details/[school]",
-                  params: { 
+                  params: {
                     school: item.schoolName,
                     address: item.address,
                     deviceId: item.deviceId,
-                    loadRate: item.loadRate, 
+                    loadRate: item.loadRate,
                    },
                 })
               }

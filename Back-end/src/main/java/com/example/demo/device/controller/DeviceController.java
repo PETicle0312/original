@@ -18,9 +18,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DeviceController {
 
-    private final DeviceRepository deviceRepository; //DB 에서 디바이스 정보를 불러오거나 수정할 때 사용하는 JPA레포
+    private final DeviceRepository deviceRepository;
 
-    // POST: 수거함 상태 업데이트
     @PostMapping("/{deviceId}/capacity")
     public ResponseEntity<String> updateCapacity(
             @PathVariable Long deviceId,
@@ -29,11 +28,9 @@ public class DeviceController {
         Optional<Device> optionalDevice = deviceRepository.findById(deviceId);
         if (optionalDevice.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Device not found");
-        }// DB에서 해당 수거함 찾기 or 오류 응답 반환
+        }
 
-        Device device = optionalDevice.get(); // 실제 Device객체 꺼냄
-
-         // 센서에서 계산된 퍼센트 값으로 capacity 필드 업데이트
+        Device device = optionalDevice.get();
         device.setCapacity(request.getCapacity());
         device.setLastUpdate(LocalDateTime.now());
 
@@ -41,19 +38,17 @@ public class DeviceController {
         return ResponseEntity.ok("Updated");
     }
 
-    // GET: 수거 상태 조회
-    @GetMapping("/{deviceId}/status") // 클라이언트에 전달
+    @GetMapping("/{deviceId}/status")
     public ResponseEntity<DeviceStatusResponse> getStatus(@PathVariable Long deviceId) {
         return deviceRepository.findById(deviceId)
                 .map(device -> ResponseEntity.ok(new DeviceStatusResponse(
                         device.getDeviceId(),
-                        device.getCapacity(),     // 이미 퍼센트 값이 저장되어 있음
+                        device.getCapacity(),
                         device.getLastUpdate()
                 )))
-                .orElse(ResponseEntity.notFound().build()); 
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // 수거 완료 시 적재율(%) 0으로 초기화
     @PostMapping("/reset-load")
     public ResponseEntity<String> resetLoadRate(
             @RequestParam Long deviceId,
@@ -65,16 +60,10 @@ public class DeviceController {
         }
 
         Device device = optionalDevice.get();
-        device.setCapacity(0); // ✅ 적재율 0으로 설정
+        device.setCapacity(0);
         device.setLastUpdate(LocalDateTime.now());
         deviceRepository.save(device);
 
-        // TODO: 필요 시 로그 테이블에도 저장 가능 (ex: device_check_logs)
-        System.out.println("✅ 수거 완료: deviceId=" + deviceId + ", adminId=" + adminId);
-
         return ResponseEntity.ok("Load rate reset to 0%");
     }
-
-
 }
-    

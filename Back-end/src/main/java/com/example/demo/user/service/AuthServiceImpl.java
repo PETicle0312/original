@@ -5,14 +5,15 @@ import com.example.demo.user.dto.RegisterRequestDto;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public String register(RegisterRequestDto dto) {
@@ -26,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = new User();
         user.setUserId(dto.getUserId());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         userRepository.save(user);
         return "회원가입 성공";
@@ -34,9 +35,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(LoginRequestDto dto) {
-        User user = userRepository.findByUserIdAndPassword(dto.getUserId(), dto.getPassword());
+        User user = userRepository.findByUserId(dto.getUserId()).orElse(null);
 
-        if (user != null) {
+        if (user != null && passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             return "로그인 성공";
         } else {
             return "아이디 또는 비밀번호가 올바르지 않습니다.";

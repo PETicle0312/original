@@ -1,8 +1,9 @@
 package com.example.demo.device.service;
+
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.common.sse.LivesSseManager;     
-import com.example.demo.user.dto.LivesDto; 
+import com.example.demo.common.sse.LivesSseManager;
+import com.example.demo.user.dto.LivesDto;
 import com.example.demo.device.dto.PetInputLogDto;
 import com.example.demo.device.entity.Device;
 import com.example.demo.device.entity.PetInputLog;
@@ -26,23 +27,14 @@ public class PetInputLogService {
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
     private final PetInputLogRepository petInputLogRepository;
-
     private final LivesSseManager sse;
 
     @Transactional
     public String saveInputLog(PetInputLogDto dto) {
-        // 1. user는 찾되, 없어도 그냥 null 허용
-    User user = null;
-    if (dto.getStudentNumber() != null && !dto.getStudentNumber().isBlank()) {
-        user = userRepository.findByStudentNumber(dto.getStudentNumber()).orElse(null);
-    }
-
-    // public String saveInputLog(PetInputLogDto dto) {
-    //     String userId = dto.getUserId();
-    //     User user = userRepository.findByStudentNumber(dto.getStudentNumber()).orElse(null);
-    //     // if (user == null) {
-    //     //     return "존재하지 않는 학번입니다";
-    //     // }
+        User user = null;
+        if (dto.getStudentNumber() != null && !dto.getStudentNumber().isBlank()) {
+            user = userRepository.findByStudentNumber(dto.getStudentNumber()).orElse(null);
+        }
 
         Device device = deviceRepository.findById(dto.getDeviceId()).orElse(null);
         if (device == null) {
@@ -52,14 +44,10 @@ public class PetInputLogService {
         if (dto.getInputCount() <= 0) {
             return "정상 PET이 아니므로 저장하지 않음";
         }
-        
-        // 4. user가 있을 때만 school 가져오기 (null-safe)
-        var school = device.getSchool();
 
-        // 로그 객체 생성
         PetInputLog log = PetInputLog.builder()
                 .userId(user)
-                .school(school)//.school(user.getSchool())
+                .school(device.getSchool())
                 .device(device)
                 .studentNumber(dto.getStudentNumber())
                 .inputCount(dto.getInputCount())
@@ -67,45 +55,31 @@ public class PetInputLogService {
                 .build();
 
         petInputLogRepository.save(log);
-//-----------------------------실시간 목숨반영 수정 로직---------------------------        
-    if (user != null) { // 회원일 때만 실행
-        // 목숨 증가
-        int currentLives = user.getTotalLives();
-        user.setTotalLives(currentLives + dto.getInputCount());
-        userRepository.save(user);
 
-        // 누적 투입량 합계 (SUM이 null일 수 있어 0 보정)
-        Integer total = petInputLogRepository.getTotalCountByUserId(user.getUserId());
-        int totalRecycleCount = (total != null) ? total : 0;
+        if (user != null) {
+            user.setTotalLives(user.getTotalLives() + dto.getInputCount());
+            userRepository.save(user);
 
-        // ✅ SSE로 실시간 푸시 (userId는 String 기준)
-        sse.publishLives(
-        user.getUserId(),
-        new LivesDto(
-            user.getUserId(),
-            user.getTotalLives(),
-            totalRecycleCount,
-            LocalDateTime.now(),
-            dto.getInputCount() )
-            // LivesDto(userId, totalLives, totalRecycleCount)
-        );
-    }
-//-----------------------------------------------------------------------------------
+            Integer total = petInputLogRepository.getTotalCountByUserId(user.getUserId());
+            int totalRecycleCount = (total != null) ? total : 0;
+
+            sse.publishLives(
+                user.getUserId(),
+                new LivesDto(
+                    user.getUserId(),
+                    user.getTotalLives(),
+                    totalRecycleCount,
+                    LocalDateTime.now(),
+                    dto.getInputCount())
+            );
+        }
+
         return "success";
     }
 
     public List<PetInputLogDto> getLogsByUserId(String userId) {
-        // 쿼리 시작 시간 기록
-        long start = System.currentTimeMillis();
-
-        // userId가 User 객체일 경우는 아래처럼 언더스코어(_) 사용
         List<PetInputLog> logs = petInputLogRepository.findTop50ByUserId_UserIdOrderByInputTimeDesc(userId);
 
-        // 쿼리 끝 시간 기록
-        long end = System.currentTimeMillis();
-        System.out.println("⏱ 로그 조회 쿼리 시간: " + (end - start) + "ms");
-
-        // 로그 -> DTO 변환
         return logs.stream().map(log -> {
             PetInputLogDto dto = new PetInputLogDto();
             dto.setUserId(log.getUserId().getUserId());
