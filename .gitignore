@@ -31,3 +31,6 @@ UserSettings/
 *.userprefs
 *.opendb
 *.VC.db
+.env
+.vscode/
+.expo/
